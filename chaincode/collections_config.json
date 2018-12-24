@@ -1,0 +1,10 @@
+[
+ {
+   "name": "leaseRecords",
+   "policy": "OR('Org1MSP.member', 'Org2MSP.member')",
+   "requiredPeerCount": 2,
+   "maxPeerCount": 4,
+   "blockToLive":3,
+   "memberOnlyRead": true
+ }
+]
