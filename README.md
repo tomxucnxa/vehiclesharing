@@ -1,4 +1,4 @@
 # Vehicle Sharing
 A testing Fabric blockchian project.
-- Chaincode
+- Chaincode (customized config.json)
 - Application
