@@ -1,2 +1,3 @@
 /application/node_modules
 /.vscode
+/application/test.js
