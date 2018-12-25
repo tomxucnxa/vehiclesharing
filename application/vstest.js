@@ -21,7 +21,6 @@ var logger = new (winston.Logger)({transports: [new (winston.transports.Console)
 
 ////////// Run testQuery ///////////
 let arg = process.argv[2];
-arg = 'invoke';
 
 switch (arg) {
     case 'query' : queryFindVehicle(); break;
@@ -56,7 +55,7 @@ async function invokeAddVehicle() {
     // Load the config.json, what describes the network.
     const networkCfg = initNetworkCfg();
     const channelName = 'mychannel';
-        
+    
     try {
         const vehicleId = getRandomId();
         let result = await invokeChaincode(networkCfg, channelName, 'org1', 'admin', [], 'createVehicle', [vehicleId, 'FORD'], 'vehiclesharing');
@@ -234,9 +233,9 @@ async function invokeChaincode(networkCfg, channelName, orgId, userId, targets, 
     await channel.initialize();
 
     const txId = client.newTransactionID();
-    logger.info('New a transaction ID: %s', txId.getTransactionID());
+    logger.info('Get a new transaction ID: %s', txId.getTransactionID());
 
-    const request = {
+    const proposalRequest = {
         chaincodeId : chaincodeId,
         fcn: fcn,
         args: args,
@@ -244,121 +243,86 @@ async function invokeChaincode(networkCfg, channelName, orgId, userId, targets, 
     };
     
     // Send transaction proposal (ChaincodeInvokeRequest) to endorsing peers, get back result (ProposalResponseObject).
-    const results = await channel.sendTransactionProposal(request);
+    const proposalResults = await channel.sendTransactionProposal(proposalRequest);
 
     // n responses from endorsing peers.
-    const proposalResponses = results[0];
+    const proposalResponses = proposalResults[0];
     
     // The original Proposal object needed when sending the transaction request to the orderer
-    const proposal = results[1];
+    const proposal = proposalResults[1];
     
-    let all_good = true;
-
-    const verifies = proposalResponses.map(propRes => {
+    // Make sure each proposal response is valid.
+    let resValid = proposalResponses.map(propRes => {
         return propRes.response && propRes.response.status === 200 && channel.verifyProposalResponse(propRes);
-    });
+    }).every(valid => valid);
 
-    all_good = verifies.every(verify => verify);
-
-
-    // for(let i in proposalResponses) {
-    //     let one_good = false;
-    //     const proposal_response = proposalResponses[i];
-    //     if( proposal_response.response && proposal_response.response.status === 200) {
-    //         logger.info('transaction proposal has response status of good');
-    //         one_good = channel.verifyProposalResponse(proposal_response);
-    //         if(one_good) {
-    //             logger.info(' transaction proposal signature and endorser are valid');
-    //         }
-    //     } 
-    //     else {
-    //         logger.error('transaction proposal was bad');
-    //     }
-    //     all_good = all_good & one_good;
-    // }
-
-
-    if (all_good) {
-        // check all the read/write sets to see if the same, verify that each peer
-        // got the same results on the proposal
-        all_good = channel.compareProposalResponseResults(proposalResponses);
-        logger.info('compareProposalResponseResults exection did not throw an error');
-        if(all_good){
-            logger.info(' All proposals have a matching read/writes sets');
-        }
-        else {
-            logger.error(' All proposals do not have matching read/write sets');
-        }
+    if (!resValid) {
+        throw Error('At least 1 proposal response is invalid.');
     }
 
+    // Make sure the proposalResponses are same.
+    if(!channel.compareProposalResponseResults(proposalResponses)){
+        throw Error('At least 1 proposal response is not same.');
+    }
 
-
-
-    if (all_good) {
-        // check to see if all the results match
-        logger.info('Successfully sent Proposal and received ProposalResponse');
-        logger.info(util.format('Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s', proposalResponses[0].response.status, proposalResponses[0].response.message, proposalResponses[0].response.payload, proposalResponses[0].endorsement.signature));
-
-        const request = {
-            proposalResponses: proposalResponses,
-            proposal: proposal
-        };
-
-        // set the transaction listener and set a timeout of 30sec
-        // if the transaction did not get committed within the timeout period,
-        // fail the test
-        const deployId = txId.getTransactionID();
-        logger.info('The deployID %s', txId.getTransactionID());
-
-        const eventPromises = [];
+    const eventPromises = [];
+    
+    // To enable/disable event hub to monitor peers event.
+    const enableEventHub = false;
+    if (enableEventHub) {
+        const plainId = txId.getTransactionID();
         eventHubs.forEach((eh) => {
-            // txPromise
+            // begin txPromise
             const txPromise = new Promise((resolve, reject) => {
                 const handle = setTimeout(reject, 120000);
-
-                eh.registerTxEvent(deployId.toString(),
+                eh.registerTxEvent(
+                    // txid
+                    plainId,
+                    // on event
                     (tx, code) => {
                         clearTimeout(handle);
-                        eh.unregisterTxEvent(deployId);
-
+                        eh.unregisterTxEvent(plainId);
                         if (code !== 'VALID') {
-                            logger.error('The balance transaction failed with ' + code);
+                            logger.error('ChannelEventHub - transaction is not valid:', code, plainId);
                             reject();
-                        } else {
-                            logger.info('The balance transfer transaction has been committed on peer '+ eh.getPeerAddr());
+                        } 
+                        else {
+                            logger.info('ChannelEventHub - transaction succeed on peer', eh.getPeerAddr(), plainId);
                             resolve();
                         }
                     },
+                    // on error
                     () => {
                         clearTimeout(handle);
-                        logger.error('Failed -- received notification of the event call back being cancelled for '+ deployId);
+                        logger.error('ChannelEventHub - error occurred', plainId);
                         resolve();
                     }
                 );
             });
             // end txPromise
-
             eh.connect();
-
             eventPromises.push(txPromise);
         });
-
-
-        // Send the proposal responses that contain the endorsements of a transaction proposal to the orderer for further processing. 
-        const sendPromise = channel.sendTransaction(request);
-// promise.all with order
-        return Promise.all([sendPromise].concat(eventPromises))
-        .then((results) => {
-            logger.debug('event promise all complete and testing complete');
-            return results[0]; // the first returned value is from the 'sendPromise' which is from the 'sendTransaction()' call
-        }).catch((err) => {
-            logger.error('Failed transaction ::'+ err);
-            throw new Error('Failed transaction ::'+ err);
-        });
     }
-    else {
-        logger.error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
-        throw new Error('Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...');
-    }
-     
+    // End event hub.
+
+    const transactionRequest = {
+        proposalResponses: proposalResponses,
+        proposal: proposal
+    };
+
+    // Send the proposal responses that contain the endorsements of a transaction proposal to the orderer for further processing. 
+    const sendPromise = channel.sendTransaction(transactionRequest);
+    
+    // Promise.all with order
+    const transactionResult = await Promise.all([sendPromise].concat(eventPromises));
+
+    // Disconnect event hubs if connected.
+    eventHubs.forEach((eh) => {
+        if (eh.isconnected()) {
+            eh.disconnect();
+        }
+    });
+
+    return transactionResult[0];
 }
