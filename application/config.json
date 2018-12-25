@@ -1,4 +1,5 @@
 {
+    "description": "This is a customized connection configuration. The corresponding program is vstest.js.",
     "vehiclesharing-network": {
         "orderer": {
             "url": "grpcs://localhost:7050",

@@ -7,6 +7,8 @@
  * https://fabric-sdk-node.github.io/master/index.html
  * https://github.com/hyperledger/fabric-sdk-node
  * but not totally same as that, it simplifies the code and figure out some important items. 
+ * 
+ * This program uses config.json, what is a customized connection configuration.
  */
 
 'use strict';
@@ -23,20 +25,21 @@ var logger = new (winston.Logger)({transports: [new (winston.transports.Console)
 let arg = process.argv[2];
 
 switch (arg) {
-    case 'query' : queryFindVehicle(); break;
+    case 'query' : queryFindVehicle(process.argv[3]); break;
     case 'invoke' : invokeAddVehicle(); break;
-    default: logger.error(`Please run command likes: 'node vstest.js query' or 'node vstest.js invoke'`);
+    default: logger.error(`Please run command likes: 'node vstest.js query [id]' or 'node vstest.js invoke'`);
 }
 
-async function queryFindVehicle() {
+async function queryFindVehicle(id) {
     logger.info('=================================== Begin queryFindVehicle ===================================');
 
     // Load the config.json, what describes the network.
     const networkCfg = initNetworkCfg();
     const channelName = 'mychannel';
-        
+    id = id === undefined ? 'C123' : id;
+
     try {        
-        let result = await queryChaincode(networkCfg, channelName, 'org1', 'admin', ['peer0.org1.example.com'], 'findVehicle', ['C123'], 'vehiclesharing');
+        let result = await queryChaincode(networkCfg, channelName, 'org1', 'admin', ['peer0.org1.example.com'], 'findVehicle', [id], 'vehiclesharing');
         if (result) {
             result.forEach((res,idx) => {
                 logger.info('Result %d', idx, Buffer.from(res).toString());
