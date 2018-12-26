@@ -60,7 +60,6 @@ async function test() {
     result.forEach((res, idx) => {
         logger.info('Query result %d', idx, Buffer.from(res).toString());
     });
-    
 }
 
 function initAdmin() {
