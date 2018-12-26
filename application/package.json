@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "homepage": "https://github.com/tomxucnxa/vehiclesharing",
   "devDependencies": {
-    "fabric-client": "1.3.0",
-    "fabric-ca-client": "1.3.0",
-    "fabric-network": "1.3.0-snapshot",
-    "winston": "^2.2.0"
+    "@types/bytebuffer": "^5.0.34",
+    "winston": "^2.2.0",
+    "fabric-ca-client": "file:../../fabric-sdk-node/fabric-ca-client",
+    "fabric-client": "file:../../fabric-sdk-node/fabric-client",
+    "fabric-network": "file:../../fabric-sdk-node/fabric-network"
   },
   "license": "Apache-2.0",
   "licenses": [
