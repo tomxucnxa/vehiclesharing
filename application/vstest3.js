@@ -40,7 +40,7 @@ async function test() {
 
     const network = await gateway.getNetwork('mychannel');
     const contract = await network.getContract('vehiclesharing');
-    const result = await contract.executeTransaction('findVehicle', 'C123');
+    const result = await contract.evaluateTransaction('findVehicle', 'C123');
     gateway.disconnect();
     
     logger.info('Result', Buffer.from(result).toString());
