@@ -1,5 +1,5 @@
 {
-    "description": "This is a customized connection configuration. The corresponding program is vstest.js.",
+    "description": "This is a customized connection configuration. Basically to be similar to connection profile, but some items is changed purposely.",
     "vehiclesharing-network": {
         "orderer": {
             "url": "grpcs://localhost:7050",

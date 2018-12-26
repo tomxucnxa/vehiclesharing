@@ -30,6 +30,7 @@ switch (arg) {
     default: logger.error(`Please run command likes: 'node vstest.js query [id]' or 'node vstest.js invoke'`);
 }
 
+
 async function queryFindVehicle(id) {
     logger.info('=================================== Begin queryFindVehicle ===================================');
 
@@ -281,7 +282,7 @@ async function invokeChaincode(networkCfg, channelName, orgId, userId, targets, 
     const allPromises = [sendPromise];
     const eventHubs = [];
 
-    // Uncomment/comment below section to enable/disable event hub to monitor peers event.
+    // Uncomment/comment below section to enable/disable event hubs to monitor peers event.
     // Begin event.
     peersList.forEach(peer => {
         eventHubs.push(channel.newChannelEventHub(peer));
