@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "homepage": "https://github.com/tomxucnxa/vehiclesharing",
   "devDependencies": {
+    "@types/bytebuffer": "^5.0.34",
     "winston": "^2.2.0",
     "fabric-ca-client": "file:../../fabric-sdk-node/fabric-ca-client",
     "fabric-client": "file:../../fabric-sdk-node/fabric-client",
