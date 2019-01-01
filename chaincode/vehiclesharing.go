@@ -259,7 +259,7 @@ func updateVehicleDynPrice(stub shim.ChaincodeStubInterface, args []string) (str
 	return v.Id, nil
 }
 
-// The wronglyTxRandValue trying won't work, since the proposal will be different on different chaincode env, for each execution.
+// The wronglyTxRandValue trying won't work, since the proposal response will be different on different chaincode env, for each execution.
 // Error: could not assemble transaction: ProposalResponsePayloads do not match - proposal response: version:1 response:<status:200 payload:"R294287" >...
 func wronglyTxRandValue(stub shim.ChaincodeStubInterface, args []string) (string, error) {
 	// Create a random value Vehicle.

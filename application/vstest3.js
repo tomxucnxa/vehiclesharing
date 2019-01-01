@@ -8,7 +8,7 @@
  * https://github.com/hyperledger/fabric-sdk-node
  * https://fabric-sdk-node.github.io/master/tutorial-network-config.html
  * 
- * This program uses config2.json, what is a common connection profile.
+ * This program uses connprofile.json, what is a common connection profile.
  * It will utilze FileSystemWallet and Gateway, what is from fabric-network module.
  */
 
@@ -30,7 +30,7 @@ async function test() {
     const wallet = await initAdminWallet(identityLabel);
     const gateway = new Gateway();
 
-    await gateway.connect(path.join(__dirname, './config2.json'),
+    await gateway.connect(path.join(__dirname, './connprofile.json'),
         {
             wallet: wallet,
             identity: identityLabel

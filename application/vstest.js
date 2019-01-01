@@ -8,7 +8,7 @@
  * https://github.com/hyperledger/fabric-sdk-node
  * but not totally same as that, it simplifies the code and figure out some important items. 
  * 
- * This program uses config.json, what is a customized connection configuration.
+ * This program uses networksettings.json, what is a customized connection configuration.
  */
 
 'use strict';
@@ -34,7 +34,7 @@ switch (arg) {
 async function queryFindVehicle(id) {
     logger.info('=================================== Begin queryFindVehicle ===================================');
 
-    // Load the config.json, what describes the network.
+    // Load the networksettings.json, what describes the network.
     const networkCfg = initNetworkCfg();
     const channelName = 'mychannel';
     id = id === undefined ? 'C123' : id;
@@ -56,7 +56,7 @@ async function queryFindVehicle(id) {
 async function invokeAddVehicle() {
     logger.info('=================================== Begin invokeAddVehicle ===================================');
 
-    // Load the config.json, what describes the network.
+    // Load the networksettings.json, what describes the network.
     const networkCfg = initNetworkCfg();
     const channelName = 'mychannel';
     
@@ -124,7 +124,7 @@ function getTargetPeers(peers, targets) {
 }
 
 function initNetworkCfg() {
-    Client.addConfigFile(path.join(__dirname, './config.json'));
+    Client.addConfigFile(path.join(__dirname, './networksettings.json'));
     return Client.getConfigSetting('vehiclesharing-network');
 }
 
