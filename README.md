@@ -4,7 +4,7 @@ A testing Fabric blockchian project.
 - Application
 
 Prerequisite:
-- Fabric Samples 1.4.0-rc2
+- Fabric Samples 1.4.0
 - Fabric SDK Node 1.4 (https://github.com/hyperledger/fabric-sdk-node/tree/release-1.4)
 
 Branch:
