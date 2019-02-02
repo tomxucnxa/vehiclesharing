@@ -1,0 +1,38 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+services:
+  prodcli:
+    container_name: prodcli
+    image: hyperledger/fabric-tools:$IMAGE_TAG
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=prodcli
+      - CORE_PEER_ADDRESS=peer0.vehicle.example.com:7051
+      #- CORE_PEER_LOCALMSPID=VehicleMSP
+      - CORE_PEER_TLS_ENABLED=true
+      #- CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/peer0.vehicle.example.com.pem
+      #- CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/peer0.vehicle.example.com.key
+      #- CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/tlsca.vehicle.example.com.pem
+      #- CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - /bin/ping:/bin/ping
+        - /usr/bin/telnet:/usr/bin/telnet
+        - ./chaincode/:/opt/gopath/src/github.com/chaincode
+        - ./utils:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+        - ./mymsp/localmsp:/etc/hyperledger/fabric/localmsp
+        - ./mymsp/orgmsp:/etc/hyperledger/fabric/orgmsp
+    network_mode: "host"
