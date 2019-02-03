@@ -1,6 +1,5 @@
-######################################################
-# ON ALL HOSTS
 
+#### on dev host
 mkdir -p ~/fabric && cd ~/fabric
 curl -sSL https://bit.ly/2ysbOFE | bash -s 1.4.0 -s
 
@@ -10,75 +9,47 @@ curl -sSL https://bit.ly/2ysbOFE | bash -s 1.4.0 -s
 # The script will download binaries and some yaml files, as well.
 # curl -f -s -C - https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/linux-amd64-1.4.0/hyperledger-fabric-linux-amd64-1.4.0.tar.gz -o fabricbin.tar.gz
 
+git clone -b pub_1.4_2.3 https://github.com/tomxucnxa/vehiclesharing.git
+
+cd vehiclesharing
+
+# Generate msp
+    ./prodmsp.sh
+
+# Generate channel artifacts
+    ./prodchannel.sh
+
+# Copy files to each host under folder fabric
+
+
+# On Each Host. Clear containers, volumes
+
+# download imag only, then create ~/fabric/vehiclesharing folder.
+# ? Does it work?
+curl -sSL https://bit.ly/2ysbOFE | bash -s 1.4.0 -s -b
+
+
+cd ~/fabric/vehiclesharing
+docker-compose -f docker-compose-prod-client.yaml down --volumes
+
+cd ~/fabric/vehiclesharing
+docker-compose -f docker-compose-prod-orderer.yaml down --volumes
+
+cd ~/fabric/vehiclesharing
+docker-compose -f docker-compose-prod-peer0-vehicle.yaml down --volumes
+
+cd ~/fabric/vehiclesharing
+docker-compose -f docker-compose-prod-peer0-sharing.yaml down --volumes
+
+
+# Remove the containers
+# On peer host, remove the dev-peer* chaincode containers before re-deployment!!!
+docker kill $(docker ps -aq)
+docker rm $(docker ps -aq)
+docker rmi -f $(docker images | awk '($1 ~ /dev-peer*/) {print $3}')
 
 
 
-######################################################
-# Boot of the Blockchain network
-
-1, Clear
-
-2, Generate msp
-    on orderer
-    on vehicle
-    on sharing
-
-3, Copy vehicle and sharing org MSP to the orderer msp, together.
-
-4. Copy configtx.yaml and then edit it. On orderer
-        ~/fabric# ll
-        total 36
-        drwxr-xr-x  5 root root  4096 Jan 26 20:08 ./
-        drwx------ 22 root root  4096 Jan 26 20:07 ../
-        drwxrwxr-x  2 1001 1001  4096 Jan 10 02:04 bin/
-        drwxrwxr-x  2 1001 1001  4096 Jan 10 02:54 config/
-        -rw-r--r--  1 root root 13017 Jan 26 17:57 configtx.yaml
-        drwxr-xr-x  4 root root  4096 Jan 26 20:08 vehiclesharing/
-                                                        channel-artifacts/
-                                                        mymsp/
-                                                        configtx.yaml
-                                                        docker-compose-prod-orderer.yaml
-
-                                                        
-** Dont' use config.yaml in msp folder, otherwise, you have to specify some OUs in configtx.yaml.
-See https://stackoverflow.com/questions/52982952/implementation-of-organization-unit-identifier-in-peer-organisation-causes-order
-
-
-5. Generate genesis block on orderer
-
-    cd ~/fabric/vehiclesharing
-
-    # Generate
-
-    export FABRIC_CFG_PATH=${PWD}
-    export CLI_TIMEOUT=10
-    export CLI_DELAY=3
-    export CHANNEL_NAME="vschannel"
-    export LANGUAGE=golang
-    export VERBOSE=true
-
-    mkdir -p channel-artifacts
-    rm -rf channel-artifacts/*
-
-    # Generate cert files and genesis block
-
-    #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -channelID bctestgenesis
-    #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -channelID bctestgenesis
-    #### !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -channelID bctestgenesis
-    
-    configtxgen -profile VehicleSharingOrdererGenesis -outputBlock ./channel-artifacts/vehiclesharing_genesis.block -channelID bctestgenesis
-    
-    #### (In this case now)
-    
-    configtxgen -profile VehicleSharingChannel -outputCreateChannelTx ./channel-artifacts/vehiclesharing_channel.tx -channelID ${CHANNEL_NAME}
-    
-    configtxgen -profile VehicleSharingChannel -outputAnchorPeersUpdate ./channel-artifacts/vehicle_org_anchors.tx -channelID ${CHANNEL_NAME} -asOrg VehicleOrg
-    configtxgen -profile VehicleSharingChannel -outputAnchorPeersUpdate ./channel-artifacts/sharing_org_anchors.tx -channelID ${CHANNEL_NAME} -asOrg SharingOrg
-    
-    # Then copy the channel-artifacts and msp folder to other hosts.
-
-6, Start orderer and peers
-    
     docker-compose -f docker-compose-prod-orderer.yaml up -d 2>&1
     
     # And then start others
@@ -87,28 +58,22 @@ See https://stackoverflow.com/questions/52982952/implementation-of-organization-
     
     docker-compose -f docker-compose-prod-peer0-sharing.yaml up -d 2>&1
     
-    
-7, hosts file on all hosts
-
-# orderer
-192.168.1.3 orderer.bctest.example.com
-# peera
-192.168.1.4 peer0.vehicle.example.com
-# peerb
-192.168.1.5 peer0.sharing.example.com
 
 
-8, Distribute the channel-artifacts to client. (channel.tx and VehicleOrgAnchors.tx)
-    And copy the orgmsp/orderer to peer0
-    And copy local msp from other nodes
+
+
     
-    
-    
+
+5. Generate genesis block on orderer
+
+    # Copy files to ~/fabric/client
     
     docker-compose -f docker-compose-prod-client.yaml up -d 2>&1
     
 
     # for peer0.vehicle
+
+    docker exec -it prodcli bash
     
     
     export CRYPTO_PATH="/etc/hyperledger/fabric"
@@ -167,8 +132,9 @@ See https://stackoverflow.com/questions/52982952/implementation-of-organization-
     export PEER_CONN_PARMS="${PEER_CONN_PARMS} --tlsRootCertFiles "${CRYPTO_PATH}/orgmsp/peer0.sharing.example.com/msp/tlscacerts/tlsca.sharing.example.com.pem""
 
     peer chaincode invoke -o $ORDERER_ADDRESS --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n mycc $PEER_CONN_PARMS -c '{"Args":["invoke","a","b","10"]}'
-        
-    # TODO: To start an individual container for each peer.
+    
+    peer chaincode query -C $CHANNEL_NAME -n mycc -c '{"Args":["query","a"]}'
+    
     
     
     
@@ -203,12 +169,3 @@ See https://stackoverflow.com/questions/52982952/implementation-of-organization-
     export VERSION="1.0"
     
     peer chaincode install -n mycc -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}
-
-    
-    
-    
-
-    
-9, For peer0.sharing..............
-
-

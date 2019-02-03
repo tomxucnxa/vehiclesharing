@@ -8,7 +8,7 @@ version: '2'
 services:
   prodcli:
     container_name: prodcli
-    image: hyperledger/fabric-tools:$IMAGE_TAG
+    image: hyperledger/fabric-tools:latest
     tty: true
     stdin_open: true
     environment:

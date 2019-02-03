@@ -32,6 +32,7 @@ services:
         - /var/run/:/host/var/run/
         - /bin/ping:/bin/ping
         - /usr/bin/telnet:/usr/bin/telnet
+        # The msp folder is requied
         - ./mymsp/localmsp/peer0.vehicle.example.com/msp:/etc/hyperledger/fabric/msp
         - ./mymsp/localmsp/peer0.vehicle.example.com/tls:/etc/hyperledger/fabric/tls
         - prod-peer0.vehicle.example.com:/var/hyperledger/production
