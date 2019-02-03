@@ -9,6 +9,20 @@ volumes:
   prod-peer0.sharing.example.com:
 
 services:
+  couchdb_peer0_sharing:
+    container_name: couchdb_peer0_sharing
+    image: hyperledger/fabric-couchdb
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+    # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+    # for example map it to utilize Fauxton User Interface in dev environments.
+    network_mode: "host"
+    ports:
+      - "5984:5984"
+
   peer0.sharing.example.com:
     container_name: peer0.sharing.example.com
     image: hyperledger/fabric-peer:latest
@@ -28,6 +42,14 @@ services:
       # - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org1.example.com:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.sharing.example.com:7051
       - CORE_PEER_LOCALMSPID=SharingMSP
+      # Below for CouchDB
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=localhost:5984
+      # The CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME and CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD
+      # provide the credentials for ledger to connect to CouchDB.  The username and password must
+      # match the username and password set for the associated CouchDB.
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
     volumes:
         - /var/run/:/host/var/run/
         - /bin/ping:/bin/ping
@@ -42,5 +64,5 @@ services:
     ports:
       - 7051:7051
       - 7053:7053
-
-
+    depends_on:
+      - couchdb_peer0_sharing

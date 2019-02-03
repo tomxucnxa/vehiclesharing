@@ -44,10 +44,11 @@ docker-compose -f docker-compose-prod-peer0-sharing.yaml down --volumes
 
 # Remove the containers
 # On peer host, remove the dev-peer* chaincode containers before re-deployment!!!
-docker kill $(docker ps -aq)
-docker rm $(docker ps -aq)
-docker rmi -f $(docker images | awk '($1 ~ /dev-peer*/) {print $3}')
+# docker kill $(docker ps -aq)
+# docker rm $(docker ps -aq)
 
+docker rm -f $(docker ps -a | awk '($2 ~ /dev-peer*/) {print $1}')
+docker rmi -f $(docker images | awk '($1 ~ /dev-peer*/) {print $3}')
 
 
     docker-compose -f docker-compose-prod-orderer.yaml up -d 2>&1
@@ -59,10 +60,6 @@ docker rmi -f $(docker images | awk '($1 ~ /dev-peer*/) {print $3}')
     docker-compose -f docker-compose-prod-peer0-sharing.yaml up -d 2>&1
     
 
-
-
-
-    
 
 5. Generate genesis block on orderer
 
@@ -169,3 +166,87 @@ docker rmi -f $(docker images | awk '($1 ~ /dev-peer*/) {print $3}')
     export VERSION="1.0"
     
     peer chaincode install -n mycc -v ${VERSION} -l ${LANGUAGE} -p ${CC_SRC_PATH}
+
+
+##################################################### FOR COUCHDB ########################################################
+
+1, Update docker file for vehicle, sharing peers, with CouchDB settings.
+
+    TODO To use the latest image of CouchDB.
+
+2, cp -R chaincode/ ~/fabric/client/chaincode/vehiclesharing/
+3, Start orderer
+   Start peer0.vehicle with couchdb 
+       It shows error...
+       curl -X PUT http://127.0.0.1:5984/_users
+       Only once fixing will solve the problem.
+    Start peer0.sharing.
+
+
+
+### For vehiclesharing chaincode
+
+
+export CC_SRC_PATH="github.com/chaincode/vehiclesharing"
+export VERSION="1.0"
+export CC_NAME="vehiclesharing"
+export LANGUAGE="golang"
+
+
+# On a peer
+
+export CRYPTO_PATH="/etc/hyperledger/fabric"
+
+export CHANNEL_NAME="vschannel"
+export LANGUAGE="golang"
+export ORDERER_ADDRESS="orderer.bctest.example.com:7050"
+export DEFAULT_POLICY="AND ('VehicleMSP.peer','SharingMSP.peer')"
+export CORE_PEER_LOCALMSPID="VehicleMSP"
+export CORE_PEER_ADDRESS="peer0.vehicle.example.com:7051"
+
+export ORDERER_CA="${CRYPTO_PATH}/orgmsp/orderer.bctest.example.com/msp/tlscacerts/tlsca.bctest.example.com.pem"
+
+export CORE_PEER_TLS_ROOTCERT_FILE="${CRYPTO_PATH}/localmsp/peer0.vehicle.example.com/tls/tlsca.vehicle.example.com.pem"
+export CORE_PEER_TLS_CERT_FILE="${CRYPTO_PATH}/localmsp/peer0.vehicle.example.com/tls/tls-peer0.vehicle.example.com.pem"
+export CORE_PEER_TLS_KEY_FILE="${CRYPTO_PATH}/localmsp/peer0.vehicle.example.com/tls/tls-peer0.vehicle.example.com.key"
+export CORE_PEER_MSPCONFIGPATH="${CRYPTO_PATH}/localmsp/admin@vehicle.example.com/msp"
+
+peer chaincode install -n $CC_NAME -v $VERSION -l $LANGUAGE -p $CC_SRC_PATH
+
+
+export PEER_CONN_PARMS="--peerAddresses peer0.vehicle.example.com:7051"
+export PEER_CONN_PARMS="${PEER_CONN_PARMS} --tlsRootCertFiles "${CRYPTO_PATH}/orgmsp/peer0.vehicle.example.com/msp/tlscacerts/tlsca.vehicle.example.com.pem""
+export PEER_CONN_PARMS="${PEER_CONN_PARMS} --peerAddresses peer0.sharing.example.com:7051"
+export PEER_CONN_PARMS="${PEER_CONN_PARMS} --tlsRootCertFiles "${CRYPTO_PATH}/orgmsp/peer0.sharing.example.com/msp/tlscacerts/tlsca.sharing.example.com.pem""
+
+
+peer chaincode instantiate -o $ORDERER_ADDRESS --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME \
+-n $CC_NAME -l $LANGUAGE -v $VERSION -c '{"Args":[""]}' -P "$DEFAULT_POLICY"
+
+
+peer chaincode invoke -o $ORDERER_ADDRESS --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME \
+-n $CC_NAME $PEER_CONN_PARMS -c '{"Args":["createVehicle", "C123", "FBC"]}'
+
+
+peer chaincode query -C $CHANNEL_NAME -n $CC_NAME -c '{"Args":["findVehicle","C123"]}'
+
+
+
+# On another peer
+
+export CRYPTO_PATH="/etc/hyperledger/fabric"
+export CHANNEL_NAME="vschannel"
+export LANGUAGE="golang"
+export ORDERER_ADDRESS="orderer.bctest.example.com:7050"
+export DEFAULT_POLICY="AND ('SharingMSP.peer','SharingMSP.peer')"
+export CORE_PEER_LOCALMSPID="SharingMSP"
+export CORE_PEER_ADDRESS="peer0.sharing.example.com:7051"
+export ORDERER_CA="${CRYPTO_PATH}/orgmsp/orderer.bctest.example.com/msp/tlscacerts/tlsca.bctest.example.com.pem"
+export CORE_PEER_TLS_ROOTCERT_FILE="${CRYPTO_PATH}/localmsp/peer0.sharing.example.com/tls/tlsca.sharing.example.com.pem"
+export CORE_PEER_TLS_CERT_FILE="${CRYPTO_PATH}/localmsp/peer0.sharing.example.com/tls/tls-peer0.sharing.example.com.pem"
+export CORE_PEER_TLS_KEY_FILE="${CRYPTO_PATH}/localmsp/peer0.sharing.example.com/tls/tls-peer0.sharing.example.com.key"
+export CORE_PEER_MSPCONFIGPATH="${CRYPTO_PATH}/localmsp/admin@sharing.example.com/msp"
+
+peer chaincode install -n $CC_NAME -v $VERSION -l $LANGUAGE -p $CC_SRC_PATH
+
+
