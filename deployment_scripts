@@ -70,7 +70,7 @@ docker rmi -f $(docker images | awk '($1 ~ /dev-peer*/) {print $3}')
 
     # for peer0.vehicle
 
-    docker exec -it prodcli bash
+    docker exec -it client bash
     
     
     export CRYPTO_PATH="/etc/hyperledger/fabric"
