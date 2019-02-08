@@ -44,11 +44,13 @@ docker-compose -f docker-compose-prod-peer0-sharing.yaml down --volumes
 
 # Remove the containers
 # On peer host, remove the dev-peer* chaincode containers before re-deployment!!!
-# docker kill $(docker ps -aq)
-# docker rm $(docker ps -aq)
+
+docker kill $(docker ps -aq)
+docker rm $(docker ps -aq)
 
 docker rm -f $(docker ps -a | awk '($2 ~ /dev-peer*/) {print $1}')
 docker rmi -f $(docker images | awk '($1 ~ /dev-peer*/) {print $3}')
+docker volume rm $(docker volume ls -q)
 
 
     docker-compose -f docker-compose-prod-orderer.yaml up -d 2>&1
@@ -143,7 +145,7 @@ docker rmi -f $(docker images | awk '($1 ~ /dev-peer*/) {print $3}')
     export CHANNEL_NAME="vschannel"
     export LANGUAGE="golang"
     export ORDERER_ADDRESS="orderer.bctest.example.com:7050"
-    export DEFAULT_POLICY="AND ('SharingMSP.peer','SharingMSP.peer')"
+    export DEFAULT_POLICY="AND ('VehicleMSP.peer','SharingMSP.peer')"
     export CORE_PEER_LOCALMSPID="SharingMSP"
     export CORE_PEER_ADDRESS="peer0.sharing.example.com:7051"
 
@@ -238,7 +240,7 @@ export CRYPTO_PATH="/etc/hyperledger/fabric"
 export CHANNEL_NAME="vschannel"
 export LANGUAGE="golang"
 export ORDERER_ADDRESS="orderer.bctest.example.com:7050"
-export DEFAULT_POLICY="AND ('SharingMSP.peer','SharingMSP.peer')"
+export DEFAULT_POLICY="AND ('VehicleMSP.peer','SharingMSP.peer')"
 export CORE_PEER_LOCALMSPID="SharingMSP"
 export CORE_PEER_ADDRESS="peer0.sharing.example.com:7051"
 export ORDERER_CA="${CRYPTO_PATH}/orgmsp/orderer.bctest.example.com/msp/tlscacerts/tlsca.bctest.example.com.pem"
