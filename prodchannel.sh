@@ -11,7 +11,7 @@ rm -rf ./channel-artifacts/*
 
 export FABRIC_CFG_PATH=${PWD}
 
-# Generate cert files and genesis block.
+# Generate genesis block.
 # Use a different channel ID for genesis block!!!
 configtxgen -profile VehicleSharingOrdererGenesis -outputBlock ./channel-artifacts/vehiclesharing_genesis.block -channelID vsgenesis
 
