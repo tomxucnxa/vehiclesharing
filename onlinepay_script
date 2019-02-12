@@ -28,10 +28,6 @@ configtxgen -configPath ./configtx_onlinepay -printOrg OnlinePayOrg > ./channel-
 #### docker exec cli scripts/step1org3.sh $CHANNEL_NAME $CLI_DELAY $LANGUAGE $CLI_TIMEOUT $VERBOSE
 ###############################################################
 ###############################################################
-        ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
-        PEER0_ORG1_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
-        PEER0_ORG2_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
-        PEER0_ORG3_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org3.example.com/peers/peer0.org3.example.com/tls/ca.crt
 
 # Test by alice@sharing.example.com
 docker exec -it client bash
@@ -93,6 +89,7 @@ export CORE_PEER_TLS_ROOTCERT_FILE="${CRYPTO_PATH}/orgmsp/peer0.sharing.example.
 export CORE_PEER_MSPCONFIGPATH=${CRYPTO_PATH}/localmsp/admin@sharing.example.com/msp
 
 peer channel signconfigtx -f onlinepayorg_update_in_envelope.pb
+# This command will change onlinepayorg_update_in_envelope
 
 #### FILES GENERATED ##########################################
 #-rw-r--r-- 1 root root 33885 Feb 10 09:06 config.json
@@ -145,7 +142,7 @@ peer channel join -b "${CHANNEL_NAME}_onlinepay.block"
 
 # installChaincode 0 3 2.0
 export CC_SRC_PATH="github.com/chaincode/vehiclesharing"
-export VERSION="1.2"
+export VERSION="1.1"
 export CC_NAME="vehiclesharing"
 export LANGUAGE="golang"
 peer chaincode install -n $CC_NAME -v $VERSION -l $LANGUAGE -p $CC_SRC_PATH
