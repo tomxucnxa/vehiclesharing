@@ -1,0 +1,39 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+volumes:
+  prod-orderer.bctest.example.com:
+
+services:
+  orderer.bctest.example.com:
+    container_name: orderer.bctest.example.com
+    image: hyperledger/fabric-orderer:latest
+    environment:
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/vehiclesharing_genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/localmsp/orderer.bctest.example.com/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/localmsp/orderer.bctest.example.com/tls/tls-orderer.bctest.example.com.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/localmsp/orderer.bctest.example.com/tls/tls-orderer.bctest.example.com.pem
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/localmsp/orderer.bctest.example.com/tls/tlsca.bctest.example.com.pem]
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+      - ORDERER_KAFKA_VERBOSE=true
+    volumes:
+      - /bin/ping:/bin/ping
+      - /usr/bin/telnet:/usr/bin/telnet
+      - ./channel-artifacts/vehiclesharing_genesis.block:/var/hyperledger/orderer/vehiclesharing_genesis.block
+      - ./mymsp/localmsp/orderer.bctest.example.com/msp:/var/hyperledger/localmsp/orderer.bctest.example.com/msp
+      - ./mymsp/localmsp/orderer.bctest.example.com/tls:/var/hyperledger/localmsp/orderer.bctest.example.com/tls
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    network_mode: "host"
+    ports:
+      - 7050:7050
+      

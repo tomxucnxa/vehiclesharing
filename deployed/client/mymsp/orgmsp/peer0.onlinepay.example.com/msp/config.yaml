@@ -1,0 +1,8 @@
+NodeOUs:
+    Enable: true
+    ClientOUIdentifier:
+        Certificate: cacerts/ca.onlinepay.example.com.pem
+        OrganizationalUnitIdentifier: client
+    PeerOUIdentifier:
+        Certificate: cacerts/ca.onlinepay.example.com.pem
+        OrganizationalUnitIdentifier: peer

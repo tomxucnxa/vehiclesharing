@@ -1,0 +1,8 @@
+NodeOUs:
+    Enable: true
+    ClientOUIdentifier:
+        Certificate: cacerts/ca.sharing.example.com.pem
+        OrganizationalUnitIdentifier: client
+    PeerOUIdentifier:
+        Certificate: cacerts/ca.sharing.example.com.pem
+        OrganizationalUnitIdentifier: peer

@@ -1,13 +1,9 @@
 {
   "name": "vehiclesharing-application",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "homepage": "https://github.com/tomxucnxa/vehiclesharing",
   "devDependencies": {
-    "@types/bytebuffer": "^5.0.34",
-    "winston": "^2.2.0",
-    "fabric-ca-client": "file:../../fabric-sdk-node/fabric-ca-client",
-    "fabric-client": "file:../../fabric-sdk-node/fabric-client",
-    "fabric-network": "file:../../fabric-sdk-node/fabric-network"
+    "fabric-network": "^1.4.0"
   },
   "license": "Apache-2.0",
   "licenses": [
