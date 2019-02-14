@@ -24,7 +24,7 @@ let arg = process.argv[2];
 switch (arg) {
     case 'query' : queryFindVehicle(process.argv[3]); break;
     case 'add' : invokeAddVehicle(getRandomId(), 'FBC'); break;
-    default: logger.error(`Please run command likes: 'node vstest4.js query [id]' or 'node vstest4.js invoke'`);
+    default: logger.error(`Please run command likes: 'node vstest4.js query [id]' or 'node vstest4.js add'`);
 }
 
 async function queryFindVehicle(vid) {
