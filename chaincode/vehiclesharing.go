@@ -135,6 +135,9 @@ func addVehicle(stub shim.ChaincodeStubInterface, v *Vehicle) (string, error) {
 		return "", err
 	}
 
+	log.Printf("AddEvent...")
+	stub.SetEvent("AddEvent", []byte(v.Id))
+
 	return v.Id, nil
 }
 
@@ -152,6 +155,9 @@ func findVehicle(stub shim.ChaincodeStubInterface, args []string) (string, error
 	if err != nil {
 		return "", fmt.Errorf("The vehicle %s doesn't exist.", id)
 	}
+
+	log.Printf("QueryEvent...")
+	stub.SetEvent("QueryEvent", []byte(id))
 
 	return string(res), nil
 }

@@ -48,7 +48,7 @@ async function test() {
 
 async function initAdminWallet(identityLabel) {
     // Hardcode crypto materials of Admin@org1.example.com.
-    const keyPath = path.join(__dirname, "../../fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/ae5b21ead4fa0954915a215b82f5ddc18dac94680c169ae577384d4b4ef89300_sk");
+    const keyPath = path.join(__dirname, "../../fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/01737fc0b3850518ff1ef05fbd81d1675582089ba66ac35fb7e5109da483e3aa_sk");
     const keyPEM = Buffer.from(fs.readFileSync(keyPath)).toString();
     const certPath = path.join(__dirname, "../../fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem");
     const certPEM = Buffer.from(fs.readFileSync(certPath)).toString();
