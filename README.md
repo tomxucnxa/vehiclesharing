@@ -1,5 +1,5 @@
 # Vehicle Sharing
-A testing Fabric blockchian project.
+A testing Fabric blockchain project.
 - Chaincode
 - Application
 
